@@ -430,7 +430,7 @@ func getBracketedString(
 // Return a string consisting of n copies of char. If n < 0, it is treated
 // as 0.
 
-func nChars(_ n: Int, char: Character = " ") -> String
+public func nChars(_ n: Int, char: Character = " ") -> String
 {
     let wanted = n >= 0 ? n : 0
     var result = ""

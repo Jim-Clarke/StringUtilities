@@ -1,3 +1,3 @@
 # StringUtilities
 
-A description of this package.
+Some simple string operations I've needed more than once.

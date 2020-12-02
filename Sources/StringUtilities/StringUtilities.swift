@@ -13,10 +13,10 @@
 
 import Foundation
 
-let DEFAULT_LEFT_BRACKET = Character("(")
-let DEFAULT_RIGHT_BRACKET = Character(")")
-let DEFAULT_QUOTE_CHAR = Character("\"")
-let ESCAPE_CHAR = Character("\\")
+public let DEFAULT_LEFT_BRACKET = Character("(")
+public let DEFAULT_RIGHT_BRACKET = Character(")")
+public let DEFAULT_QUOTE_CHAR = Character("\"")
+public let ESCAPE_CHAR = Character("\\")
 
 
 // Given regex, a regular expression, and target, possibly containing
@@ -26,7 +26,7 @@ let ESCAPE_CHAR = Character("\\")
 // Returns an empty array of arrays of String if no match is found --
 // that is, [] of type [[String]].
 
-func applyRegex(regex: String, target: String) -> [[String]] {
+public func applyRegex(regex: String, target: String) -> [[String]] {
     // Reference: https://nshipster.com/swift-regular-expressions/
     
     let nsregex = try! NSRegularExpression(pattern: regex, options: [])
@@ -99,7 +99,7 @@ func applyRegex(regex: String, target: String) -> [[String]] {
 // Essentially the same as QuotedStringFormat.parse(String, ParsePosition) in
 // the Java version.
 
-func getQuotedString(
+public func getQuotedString(
         source: String?,
         start: String.Index? = nil,
         quote: Character = DEFAULT_QUOTE_CHAR
@@ -205,7 +205,7 @@ func getQuotedString(
 // Essentially the same as QuotedStringFormat.unquotedIndexOf(String, char) in
 // the Java version.
 
-func unquotedIndexOf(source: String?,
+public func unquotedIndexOf(source: String?,
                      char ch: Character,
                      quote: Character = DEFAULT_QUOTE_CHAR
     ) -> String.Index?
@@ -325,7 +325,7 @@ func unquotedIndexOf(source: String?,
 // Essentially the same as BracketedStringFormat.parse(String, ParsePosition) in
 // the Java version.
 
-func getBracketedString(
+public func getBracketedString(
         source: String?,
         start: String.Index? = nil,
         leftBracket: Character = DEFAULT_LEFT_BRACKET,
@@ -446,7 +446,7 @@ public func nChars(_ n: Int, char: Character = " ") -> String
 // Essentially the same as WhiteSpaceFormat.formatHelper(int) in the Java
 // version.
 
-func nBlanks(_ n: Int) -> String
+public func nBlanks(_ n: Int) -> String
 {
     return nChars(n)
 }
@@ -458,7 +458,7 @@ func nBlanks(_ n: Int) -> String
 // Essentially the same as WhiteSpaceFormat.leftPad(String, int) in the Java
 // version.
 
-func leftPadded(_ source: String, desiredCount: Int) -> String {
+public func leftPadded(_ source: String, desiredCount: Int) -> String {
     let neededExtras = desiredCount - source.count
     return nBlanks(neededExtras) + source
 }
@@ -470,7 +470,7 @@ func leftPadded(_ source: String, desiredCount: Int) -> String {
 // Essentially the same as WhiteSpaceFormat.rightPad(String, int) in the Java
 // version.
 
-func rightPadded(_ source: String, desiredCount: Int) -> String {
+public func rightPadded(_ source: String, desiredCount: Int) -> String {
     let neededExtras = desiredCount - source.count
     return source + nBlanks(neededExtras)
 }
@@ -485,7 +485,7 @@ func rightPadded(_ source: String, desiredCount: Int) -> String {
 // Essentially the same as WhiteSpaceFormat.parse(String, ParsePosition) in the
 // Java version.
 
-func skipWhitespace(_ source: String, start: String.Index? = nil) -> String.Index?
+public func skipWhitespace(_ source: String, start: String.Index? = nil) -> String.Index?
 {
     // Start at the beginning of source if we're not told otherwise.
     var pos = start ?? source.startIndex
@@ -506,7 +506,7 @@ func skipWhitespace(_ source: String, start: String.Index? = nil) -> String.Inde
 // Return a string that is the same as source except with leading and trailing
 // whitespace removed.
 
-func trimWhitespace(_ source: String) -> String
+public func trimWhitespace(_ source: String) -> String
 {
     // Trim the beginning: set pos to the position of the first nonblank, or
     // the string's endIndex if it is entirely whitespace.

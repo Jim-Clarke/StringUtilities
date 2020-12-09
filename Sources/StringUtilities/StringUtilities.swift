@@ -26,6 +26,37 @@ public let ESCAPE_CHAR = Character("\\")
 // Returns an empty array of arrays of String if no match is found --
 // that is, [] of type [[String]].
 
+// Example usage:
+//
+// func atStrIntAt(_ inStr: String) -> (String, Int)? {
+//
+//     // Default (error-signalling) values in case of trouble.
+//     let failResult: (String, Int)? = nil
+//
+//     let pat = "^@([A-Z]+)([0-9]+)@$"
+//
+//     let matches = applyRegex(pattern: pat, target: inStr)
+//
+//     if matches.count != 1 {
+//         return failResult
+//     }
+//
+//     let matchStrings = matches[0]
+//     if matchStrings.count != 3 { // overall match, and the two parts
+//         return failResult
+//     }
+//
+//     // Convert the second part to an integer.
+//     guard let secondInt = Int(matchStrings[2]) else {
+//         return failResult
+//     }
+//     // if secondInt <= 0 {
+//     //     return failResult
+//     // }
+//
+//     return (matchStrings[1], secondInt)
+// }
+
 public func applyRegex(regex: String, target: String) -> [[String]] {
     // Reference: https://nshipster.com/swift-regular-expressions/
     

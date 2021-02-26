@@ -227,7 +227,30 @@ class BracketedStringTests: XCTestCase {
         TestCase2("(((a) b (c)) d) e)", 1, "(a) b (c)", 12),
     ]
 
- 
+    // // Feb 25/21: found the tests in testdata2 without a corresponding test
+    // function. That might very well have been OK, since I was careful setting
+    // up the test cases in Nov/20, but it might also have been an oversight --
+    // especially since I can't find the same tests duplicated in an earlier
+    // collection. So here we go again.
+    func testMultiFromOffset() {
+        for i in 0 ..< testdata2.count {
+            let source = testdata2[i].source
+            let start = source.index(source.startIndex,
+                                            offsetBy: testdata2[i].startPos)
+            (str, pos) = getBracketedString(source: source, start: start)
+            XCTAssertEqual(str, testdata2[i].out)
+            if testdata2[i].outPos == nil {
+                XCTAssertNil(pos)
+            }
+            else {
+                let expectedIndex = source.index(source.startIndex,
+                                            offsetBy: testdata2[i].outPos!)
+                XCTAssertEqual(pos, expectedIndex)
+            }
+        }
+    }
+
+
     // -- parseObject() -- Well, not really: there's no such thing.
     // But we'll do the two test cases just for fun.
     // Moved: see end of testdata1 collection.

@@ -36,5 +36,8 @@ let package = Package(
         .testTarget(
             name: "ApplyRegexTests",
             dependencies: ["StringUtilities"]),
+        .target(
+            name: "OptionScanner",
+            dependencies: []),
     ]
 )

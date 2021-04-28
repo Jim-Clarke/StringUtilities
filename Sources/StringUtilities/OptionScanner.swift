@@ -7,7 +7,7 @@
 import Foundation
 
 // This class helps you extract the options set in a Unix-style command line.
-// It should  remind you of C's getopt(), but it doesn't do exactly the same
+// It should remind you of C's getopt(), but it doesn't do exactly the same
 // things.
 
 // How to use it -- a brief summary
@@ -268,7 +268,25 @@ public protocol OptionUser {
 
 public class OptionScanner {
     
-    // Public members of OptionScanner needed for the simple usage case:
+    // Public attributes of OptionScanner:
+    
+    // Lists constructed from "options" and "users" after they are complete
+    
+    // Briefly, allOptions is everything, and creatorOptions is options
+    // belonging to the original caller but not to any OptionUser.
+    //
+    // Options belonging to an OptionUser are stored in that OptionUser object.
+    
+    public var allOptions = [Option]() // derived from the values in options
+    // after all options have been read: a combination of creatorOptions and
+    // all the OptionUsers' options.
+    public var creatorOptions = [Option]() // the options for the "creator" user
+        // The creator could have been treated as a nil OptionUser, but it   
+        // seemed better to have a separate, named list.
+        //
+        // Still, an Option owned by the creator does have owner == nil.
+    
+    // Public functions of OptionScanner needed for the simple usage case:
     //
     // - the class Option.
     // - init(_ optionString:, <two defaulted parameters>)
@@ -414,6 +432,9 @@ option argument description set on non-arg option '\(optionChar)'
 
     // Each option is associated with its unique option character. As they are
     // read and constructed (in parseOptions()), we put them in this dictionary.
+    //
+    // This dictionary is not public. The public options are in allOptions and
+    // creatorOptions.
     var options = [Character: Option]()
     
     // Self-explanatory, I hope. Collected by addUser().
@@ -423,23 +444,6 @@ option argument description set on non-arg option '\(optionChar)'
     // the first time it is called (by usageString() or getOpts()), and checked
     // by addUser() to detect late attempts to add, and by buildOptionLists() to
     // avoid rebuilding the same lists.
-    
-    
-    // Lists constructed from "options" and "users" after they are complete
-    
-    // Briefly, allOptions is everything, and creatorOptions is options
-    // belonging to the original caller but not to any OptionUser.
-    //
-    // Options belonging to an OptionUser are stored in that OptionUser object.
-    
-    var allOptions = [Option]() // derived from the values in options after all
-    // options have been read: a combination of creatorOptions and all the
-    // OptionUsers' options.
-    var creatorOptions = [Option]() // the options for the "creator" user
-        // The creator could have been treated as a nil OptionUser, but it   
-        // seemed better to have a separate, named list.
-        //
-        // Still, an Option owned by the creator does have owner == nil.
 
 
     // Initialize this OptionScanner.

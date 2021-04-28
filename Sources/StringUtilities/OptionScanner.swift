@@ -7,7 +7,7 @@
 import Foundation
 
 // This class helps you extract the options set in a Unix-style command line.
-// It should remind you of C's getopt(), but it doesn't do exactly the same
+// It should  remind you of C's getopt(), but it doesn't do exactly the same
 // things.
 
 // How to use it -- a brief summary

@@ -1,5 +1,5 @@
 import XCTest
-//@testable import StringUtilities
+@testable import StringUtilities
 
 extension OptionError: Equatable {
 

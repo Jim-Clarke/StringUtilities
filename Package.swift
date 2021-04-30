@@ -24,20 +24,20 @@ let package = Package(
         .testTarget(
             name: "StringUtilitiesTests",
             dependencies: ["StringUtilities"]),
-        .testTarget(
-            name: "QuotedStringTests",
-            dependencies: ["StringUtilities"]),
-       .testTarget(
-            name: "BracketedStringTests",
-            dependencies: ["StringUtilities"]),
-        .testTarget(
-            name: "WhitespaceTests",
-            dependencies: ["StringUtilities"]),
-        .testTarget(
-            name: "ApplyRegexTests",
-            dependencies: ["StringUtilities"]),
-        .target(
-            name: "OptionScanner",
-            dependencies: []),
+//        .testTarget(
+//            name: "QuotedStringTests",
+//            dependencies: ["StringUtilities"]),
+//       .testTarget(
+//            name: "BracketedStringTests",
+//            dependencies: ["StringUtilities"]),
+//        .testTarget(
+//            name: "WhitespaceTests",
+//            dependencies: ["StringUtilities"]),
+//        .testTarget(
+//            name: "ApplyRegexTests",
+//            dependencies: ["StringUtilities"]),
+//        .target(
+//            name: "OptionScanner",
+//            dependencies: []),
     ]
 )

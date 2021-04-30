@@ -6,7 +6,7 @@
 //
 
 import XCTest
-//@testable import StringUtilitiesTests
+@testable import StringUtilities
 // Reproducing the tests from the Java version of 2003.
 
 // The compiler won't let us override OptionError.== (which is fine) or the

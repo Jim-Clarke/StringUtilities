@@ -539,36 +539,43 @@ public func skipWhitespace(_ source: String, start: String.Index? = nil) -> Stri
 
 public func trimWhitespace(_ source: String) -> String
 {
-    // Trim the beginning: set pos to the position of the first nonblank, or
-    // the string's endIndex if it is entirely whitespace.
-
-    var pos = skipWhitespace(source)
+    // Well, this is embarrassing: not only did I overlook
+    // NSString.trimmingCharacters, but what reminded me was some of my own code
+    // in another program.
     
-    guard pos != nil else {
-        // pos == nil cannot occur because skipWhitespace, called with a nil
-        // "start", cannot return nil.
-        return ""
-    }
+    return source.trimmingCharacters(in: .whitespaces)
 
-    if pos == source.endIndex {
-        // "source" is entirely whitespace.
-        return ""
-    }
+    // And here's what I had before, in case history gets to be important:
     
-    let rightPart = source[pos! ..< source.endIndex]
-
-    // Trim the end: move pos to the position just after the last nonblank.
-
-    pos = rightPart.endIndex
-    
-    while pos! > rightPart.startIndex
-            && CharacterSet.whitespaces
-            .contains(Unicode.Scalar(String(
-                                        rightPart[rightPart.index(before:pos!)]))!
-            ) {
-        pos = rightPart.index(before: pos!)
-    }
-
-    return String(rightPart[rightPart.startIndex ..< pos!])
+    // // Trim the beginning: set pos to the position of the first nonblank, or
+    // // the string's endIndex if it is entirely whitespace.
+    //
+    // var pos = skipWhitespace(source)
+    //
+    // guard pos != nil else {
+    //     // pos == nil cannot occur because skipWhitespace, called with a nil
+    //     // "start", cannot return nil.
+    //     return ""
+    // }
+    //
+    // if pos == source.endIndex {
+    //     // "source" is entirely whitespace.
+    //     return ""
+    // }
+    //
+    // let rightPart = source[pos! ..< source.endIndex]
+    //
+    // // Trim the end: move pos to the position just after the last nonblank.
+    //
+    // pos = rightPart.endIndex
+    //
+    // while pos! > rightPart.startIndex
+    //         && CharacterSet.whitespaces
+    //         .contains(Unicode.Scalar(String(
+    //                                     rightPart[rightPart.index(before:pos!)]))!
+    //         ) {
+    //     pos = rightPart.index(before: pos!)
+    // }
+    //
+    // return String(rightPart[rightPart.startIndex ..< pos!])
 }
-

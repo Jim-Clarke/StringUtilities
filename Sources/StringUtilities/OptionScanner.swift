@@ -6,6 +6,12 @@
 
 import Foundation
 
+// A less weird and more complete package is:
+//      https://github.com/apple/swift-argument-parser/
+// As of this writing (July 2021), its README warns of frequent updates, so
+// you might want to wait before using it -- or not: you don't have the same
+// sunk effort in OptionScanner that I have.
+
 // This class helps you extract the options set in a Unix-style command line.
 // It should remind you of C's getopt(), but it doesn't do exactly the same
 // things.

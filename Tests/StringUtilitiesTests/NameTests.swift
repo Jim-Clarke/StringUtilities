@@ -18,4 +18,27 @@ class NameTests: XCTestCase {
         let me = Name(name: "Jim")
         XCTAssertEqual(me.name, "Jim")
     }
+    
+    func testCheck() {
+        XCTAssertFalse(Name.check(name: "jim!"))
+        XCTAssert(Name.check(name: "jim"))
+        XCTAssert(Name.check(name: ""))
+    }
+    
+    let standardizeTests = [
+        ["jim!", "jim!"],
+        ["  hi my.  name is,jim, ", "hi my. name is jim"],
+        ["h\ti", "h i"],
+        ["\ttab\t2tabs\t\tendtabs\t\t\t", "tab 2tabs endtabs"],
+        [",ab,,cd,, ,ef,, ,", "ab cd ef"],
+    ]
+    
+    func testStandardize() {
+        for i in 0 ..< standardizeTests.count {
+            let before = standardizeTests[i][0]
+            let after = Name.standardize(name: before)
+            let shouldbe = standardizeTests[i][1]
+            XCTAssertEqual(after, shouldbe)
+        }
+    }
 }

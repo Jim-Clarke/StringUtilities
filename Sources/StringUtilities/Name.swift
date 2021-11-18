@@ -3,13 +3,19 @@
 //
 //  Format and compare people's names. Mostly based on a Java version from 2003,
 //  itself based on a C version with some code inherited from a Turing function.
+//
+//  The only significant difference between the Java version and this one is
+//  that here, the name is immutable (and all derived values are prepared when
+//  the Name object is created. If you want a new name, make a new Name.
+//
+//  As I am the only known user of the Name class, I don't think the differences
+//  will cause trouble.
 //  
 //
 //  Created by Jim Clarke on 2021-07-30.
 //
 
 import Foundation
-
 
 
 extension Name : CustomStringConvertible {
@@ -37,13 +43,84 @@ extension Name: Comparable {
 
 public class Name {
     
-    // static members first
+    // A Name represents a person's name. A name is considered to consist of two
+    // parts: a family name and some given names. There are two init() methods,
+    // allowing a Name to be created either from two strings specifying the
+    // family and given names, or from a single string assumed to consist of the
+    // family name followed by the given names.
+    //
+    // The properties of a Name include all three values:
+    // 1) name: a single String combining the family and given names
+    // 2) familyName
+    // 3) givenNames
+    //
+    // There are two init() methods. One init() takes name (1) and breaks it
+    // up into (2) and (3) using plausible rules. The other init() takes (2)
+    // and (3) and concatenates them to make (1). After the Name is created, the
+    // caller can assume all three parts are available (but not changeable).
+    //
+    // Before storing, we clean up the name in all three versions: capitalizing
+    // (with the static method capitalize()) and fixing up blanks with
+    // standardize(). Some people may be unhappy with this, but enough people
+    // are surprisingly casual with their names that to make printed output
+    // bearable we need to be the uncasual ones.
+
+
+    // non-static members first
+
+    // the parts that matter
     
-    public static func testing() -> String {
-        return "hi, mom"
+    public let name: String
+    public let familyName: String
+    public let givenNames: String
+    let normalForm: String // all lower case, for comparison and equality checks
+
+    
+    // Create a Name from a single String giving the entire name.
+    //
+    // The parameter "name" is reconstructed and cleaned up before it is saved
+    // as the instance property "name" (in the other init()).
+    
+    convenience init(name: String) {
+        // Can't call standardize() yet, because it makes word separators into
+        // single blanks.
+
+        let (familyName, givenNames) = Name.dissectName(name)
+        
+        self.init(familyName: familyName, givenNames: givenNames)
     }
+
+
+    // Create a Name from supplied familyName and givenNames.
+    //
+    // The parameters are cleaned up before they are used to build the instance
+    // properties.
     
-    static let SEPARATOR: Character = ","// TODO: String?
+    init(familyName: String, givenNames: String) {
+        let cleanedFamily = Name.standardize(Name.capitalize(familyName))
+        let cleanedGiven = Name.standardize(Name.capitalize(givenNames))
+        
+        if cleanedFamily.isEmpty {
+            self.familyName = cleanedGiven
+            self.givenNames = ""
+        } else {
+            self.familyName = cleanedFamily
+            self.givenNames = cleanedGiven
+        }
+        
+        if self.givenNames.isEmpty {
+            self.name = self.familyName
+        } else {
+            self.name = self.familyName + "  " + self.givenNames
+        }
+        normalForm = self.name.lowercased()
+    }
+
+
+    // static members
+    
+    static let SEPARATOR: String = "," // not Character because it's used in a
+    // [String] in dissectName().
     
     // Characters other than letters and whitespace that are allowed in a name.
     // The collection may change as experience accumulates. It is used only in
@@ -65,7 +142,72 @@ public class Name {
         }
         return true
     }
-    
+
+
+    // Extract and return the two parts of name: family name and given names.
+    //
+    // On return, either or both of familyName and givenNames may be "". The
+    // caller will want to handle the situation where just familyName is empty.
+    //
+    // The process is vulnerable to malicious use of commas or tabs or even
+    // blanks in sufficient numbers, but if people want to type their names like
+    // that....
+
+    public static func dissectName(_ name: String) -> (String, String) {
+        
+        let trimmed = trimWhitespace(name)
+            // because leading or trailing blanks might mislead us
+            
+        var familyName: String?
+        var givenNames: String?
+        let separators = [SEPARATOR, "  ", "\t", " "] // The order matters.
+        
+        for sep in separators {
+            // Nov. 2021: The String method
+            //      range(of: String) -> Range
+            // seems to be new, perhaps as recently as Swift 5.5 (out for
+            // perhaps half a year now). Previously you had to use the NSString
+            // method
+            //      range(of: String) -> NSRange
+            // and then use one of Range's initializers:
+            //      Range(NSRange, in: String)
+            // It was a relief to find String's new range(), but some
+            // documentation would have been nice.
+            
+            if let sepRange = trimmed.range(of: sep) {
+                let breakpoint = sepRange.lowerBound
+                familyName = String(trimmed[trimmed.startIndex ..< breakpoint])
+                
+                let afterBreak = sepRange.upperBound
+                if afterBreak >= trimmed.endIndex {
+                    // could happen if sep is a trailing "," or something else
+                    // that is not cleaned up by trimming
+                    givenNames = ""
+                } else {
+                    givenNames = String(trimmed[afterBreak ..< trimmed.endIndex])
+                    // can't be nil: substring is not empty
+                    // can't be "" ... if I'm right. It's OK if I'm wrong.
+                }
+                // givenNames is not nil here
+                
+                givenNames = trimWhitespace(givenNames!) // might be empty now
+                
+                break // from loop
+            }
+        }
+        
+        // If familyName is not nil, then we found a separator, so givenNames is
+        // also not nil.
+        
+        if familyName == nil {
+            // We didn't find a separator.
+            familyName = name
+            givenNames = ""
+        }
+        
+        return (familyName!, givenNames!)
+    }
+
 
     // Return name(*) converted into standard form:
     // - all whitespace and SEPARATORs converted to blanks
@@ -218,25 +360,6 @@ public class Name {
     }
 
     
-    // non-static members
-    
-    // When a name is created, it is broken up into family-name and given-names
-    // parts.
-    
-    let familyName: String
-    let givenNames: String
-    let normalForm: String // used in comparison and equality checks
-    
-    var name: String
-    
-    init(name: String) {
-        self.name = name
-        familyName = name
-        givenNames = name
-        normalForm = name
-    }
-
-
     // Return name with the family-name part moved to the beginning -- that is,
     // move the last word of the name to the beginning, where it is separated
     // by at least one whitespace character from the rest of the name. Double

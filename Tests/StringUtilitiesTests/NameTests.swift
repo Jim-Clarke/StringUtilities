@@ -9,14 +9,60 @@ import XCTest
 @testable import StringUtilities
 
 class NameTests: XCTestCase {
-    func testTesting() {
-        let str = Name.testing()
-        XCTAssertEqual(str, "hi, mom")
+
+    let init1Tests = [
+        ["Jim", "Jim", "Jim", "", "jim"],
+        [", Jim", "Jim", "Jim", "", "jim"],
+        ["Clarke  Jim", "Clarke  Jim", "Clarke", "Jim", "clarke  jim"],
+        ["Clarke,Jim", "Clarke  Jim", "Clarke", "Jim", "clarke  jim"],
+        ["Clarke, Jim", "Clarke  Jim", "Clarke", "Jim", "clarke  jim"],
+        ["Clarke\tJim", "Clarke  Jim", "Clarke", "Jim", "clarke  jim"],
+        ["Clarke Jim", "Clarke  Jim", "Clarke", "Jim", "clarke  jim"],
+        ["Clarke ,Jim", "Clarke  Jim", "Clarke", "Jim", "clarke  jim"],
+        ["Clarke,  Jim", "Clarke  Jim", "Clarke", "Jim", "clarke  jim"],
+        ["Clarke,    Jim", "Clarke  Jim", "Clarke", "Jim", "clarke  jim"],
+    ]
+    
+    func testInit1() {
+        for i in 0 ..< init1Tests.count {
+            let nameData = init1Tests[i][0]
+            let expName = init1Tests[i][1]
+            let expFamily = init1Tests[i][2]
+            let expGiven = init1Tests[i][3]
+            let expNorm = init1Tests[i][4]
+            
+            let name = Name(name: nameData)
+            XCTAssertEqual(name.name, expName, "name")
+            XCTAssertEqual(name.familyName, expFamily, "family")
+            XCTAssertEqual(name.givenNames, expGiven, "given")
+            XCTAssertEqual(name.normalForm, expNorm, "normal")
+        }
     }
     
-    func testInit() {
-        let me = Name(name: "Jim")
-        XCTAssertEqual(me.name, "Jim")
+    let init2Tests = [
+        ["Jim", "", "Jim", "Jim", "", "jim"],
+        ["", "Jim", "Jim", "Jim", "", "jim"],
+        ["Clarke    ", "Jim", "Clarke  Jim", "Clarke", "Jim", "clarke  jim"],
+        ["Clarke", "Jim   Bob", "Clarke  Jim Bob", "Clarke", "Jim Bob", "clarke  jim bob"],
+        ["Clarke", "Jim,,Bob", "Clarke  Jim Bob", "Clarke", "Jim Bob", "clarke  jim bob"],
+    ]
+    
+    func testInit2() {
+        for i in 0 ..< init2Tests.count {
+            let familyNameData = init2Tests[i][0]
+            let givenNamesData = init2Tests[i][1]
+            let expName = init2Tests[i][2]
+            let expFamily = init2Tests[i][3]
+            let expGiven = init2Tests[i][4]
+            let expNorm = init2Tests[i][5]
+            
+            let name = Name(familyName: familyNameData,
+                            givenNames: givenNamesData)
+            XCTAssertEqual(name.name, expName, "name")
+            XCTAssertEqual(name.familyName, expFamily, "family")
+            XCTAssertEqual(name.givenNames, expGiven, "given")
+            XCTAssertEqual(name.normalForm, expNorm, "normal")
+        }
     }
     
     func testCheck() {

@@ -21,6 +21,8 @@ class NameTests: XCTestCase {
         ["Clarke ,Jim", "Clarke  Jim", "Clarke", "Jim", "clarke  jim"],
         ["Clarke,  Jim", "Clarke  Jim", "Clarke", "Jim", "clarke  jim"],
         ["Clarke,    Jim", "Clarke  Jim", "Clarke", "Jim", "clarke  jim"],
+        [".cummings,.e .e", ".cummings  .e .e", ".cummings", ".e .e", ".cummings  .e .e"],
+        ["=cummings,\'e $e", "=cummings  'e $e", "=cummings", "'e $e", "=cummings  'e $e"], // or any non-letter of the user's preference
     ]
     
     func testInit1() {
@@ -45,7 +47,8 @@ class NameTests: XCTestCase {
         ["Clarke    ", "Jim", "Clarke  Jim", "Clarke", "Jim", "clarke  jim"],
         ["Clarke", "Jim   Bob", "Clarke  Jim Bob", "Clarke", "Jim Bob", "clarke  jim bob"],
         ["Clarke", "Jim,,Bob", "Clarke  Jim Bob", "Clarke", "Jim Bob", "clarke  jim bob"],
-    ]
+        [".cummings", ".e .e", ".cummings  .e .e", ".cummings", ".e .e", ".cummings  .e .e"],
+   ]
     
     func testInit2() {
         for i in 0 ..< init2Tests.count {
@@ -108,7 +111,6 @@ class NameTests: XCTestCase {
         ["Roy fitzallan", "Roy Fitzallan"],
         ["Roy FITZALLAN", "Roy FitzAllan"],
         ["Roy FITZ", "Roy Fitz"],
-
     ]
     
     func testCapitalize() {
@@ -139,5 +141,48 @@ class NameTests: XCTestCase {
             let shouldbe = familyToFrontTests[i][1]
             XCTAssertEqual(after, shouldbe)
         }
+    }
+    
+    
+    let dissectNameTests = [
+        ["Jim", "Jim", ""],
+        [", Jim", "", "Jim"],
+        ["Clarke  Jim", "Clarke", "Jim"],
+        ["Clarke,Jim", "Clarke", "Jim"],
+        ["Clarke, Jim", "Clarke", "Jim"],
+        ["Clarke\tJim", "Clarke", "Jim"],
+        ["Clarke Jim", "Clarke", "Jim"],
+        ["Clarke ,Jim", "Clarke ", "Jim"],
+        ["Clarke,  Jim", "Clarke", "Jim"],
+        ["Clarke,    Jim", "Clarke", "Jim"],
+        ["Clarke,Jim, Bob", "Clarke", "Jim, Bob"],
+        ["Clarke,Jim,,,,,Bob", "Clarke", "Jim,,,,,Bob"],
+        [".cummings,.e .e", ".cummings", ".e .e"],
+        ["=cummings,\'e $e", "=cummings", "'e $e"], // or any non-letter of the user's preference
+    ]
+    
+    func testDissectName() {
+        for i in 0 ..< dissectNameTests.count {
+            let before = dissectNameTests[i][0]
+            let (family, givens) = Name.dissectName(before)
+            let shouldbeFamily = dissectNameTests[i][1]
+            let shouldbeGivens = dissectNameTests[i][2]
+            XCTAssertEqual(family, shouldbeFamily)
+            XCTAssertEqual(givens, shouldbeGivens)
+        }
+    }
+    
+    
+    // Try getting family name when it's in last position.
+    func testLastDissectName() {
+        let name = "Jim Bob  Clarke"
+        let rev = String(name.reversed())
+        let (revFamily, revGivens) = Name.dissectName(rev)
+        let family = String(revFamily.reversed())
+        let givens = String(revGivens.reversed())
+        let shouldbeFamily = "Clarke"
+        let shouldbeGivens = "Jim Bob"
+        XCTAssertEqual(family, shouldbeFamily)
+        XCTAssertEqual(givens, shouldbeGivens)
     }
 }

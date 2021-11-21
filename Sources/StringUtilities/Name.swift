@@ -53,6 +53,10 @@ public class Name {
     // 1) name: a single String combining the family and given names
     // 2) familyName
     // 3) givenNames
+    // All are public but (unlike in the Java version) not modifiable. If you
+    // want a different name, make a new Name.
+    //
+    // There is also a non-public "normal form", used in comparisons.
     //
     // There are two init() methods. One init() takes name (1) and breaks it
     // up into (2) and (3) using plausible rules. The other init() takes (2)
@@ -70,7 +74,7 @@ public class Name {
 
     // the parts that matter
     
-    public let name: String
+    public let name: String // did not exist in Java version
     public let familyName: String
     public let givenNames: String
     let normalForm: String // all lower case, for comparison and equality checks
@@ -79,9 +83,9 @@ public class Name {
     // Create a Name from a single String giving the entire name.
     //
     // The parameter "name" is reconstructed and cleaned up before it is saved
-    // as the instance property "name" (in the other init()).
+    // as the instance property "name" (in the other ("designated") init()).
     
-    convenience init(name: String) {
+    public convenience init(name: String) {
         // Can't call standardize() yet, because it makes word separators into
         // single blanks.
 
@@ -96,7 +100,7 @@ public class Name {
     // The parameters are cleaned up before they are used to build the instance
     // properties.
     
-    init(familyName: String, givenNames: String) {
+    public init(familyName: String, givenNames: String) {
         let cleanedFamily = Name.standardize(Name.capitalize(familyName))
         let cleanedGiven = Name.standardize(Name.capitalize(givenNames))
         
@@ -129,10 +133,12 @@ public class Name {
     
     static let allowedCharacters =
         CharacterSet.letters.union(.whitespaces).union(extraCharacters)
-        
+
+
     // Return true iff all characters in name are allowed in a name. This
     // utility function is offered to users but not called in any other method
     // here, as of May 2003 (and August 2021!).
+    
     public static func check(name: String) -> Bool {
         for char in name {
             let unicodeChar = Unicode.Scalar(String(char))
@@ -152,6 +158,12 @@ public class Name {
     // The process is vulnerable to malicious use of commas or tabs or even
     // blanks in sufficient numbers, but if people want to type their names like
     // that....
+    //
+    // If the family name is in last position instead of first, try reversing
+    // the name, dissecting it, and re-reversing the two return values. (Don't
+    // forget that reversed strings need casting to make them into Strings.)
+    // This kludge will fail if the separator is a non-palindrome -- which none
+    // are at present.
 
     public static func dissectName(_ name: String) -> (String, String) {
         
@@ -184,7 +196,8 @@ public class Name {
                     // that is not cleaned up by trimming
                     givenNames = ""
                 } else {
-                    givenNames = String(trimmed[afterBreak ..< trimmed.endIndex])
+                    givenNames =
+                            String(trimmed[afterBreak ..< trimmed.endIndex])
                     // can't be nil: substring is not empty
                     // can't be "" ... if I'm right. It's OK if I'm wrong.
                 }
@@ -258,10 +271,11 @@ public class Name {
 	// or spacing of name. Behaves more "cleverly" if name originally has mixed
 	// case, but is certainly not always right.
     //
-    // The first step is to call standardize(name), so that we can assume all parts
-    // of the name are separated by single blanks, without leading or trailing
-    // blanks. This means that before this function is called, the name should
-    // already have been broken into separate family and given names.
+    // The first step is to call standardize(name), so that we can assume all
+    // parts of the name are separated by single blanks, without leading or
+    // trailing blanks. This means that before this function is called, the
+    // name should already have been broken into separate family and given
+    // names.
     
     public static func capitalize(_ name: String) -> String {
         // Which cases are present in the name?

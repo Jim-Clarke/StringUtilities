@@ -111,6 +111,8 @@ class NameTests: XCTestCase {
         ["Roy fitzallan", "Roy Fitzallan"],
         ["Roy FITZALLAN", "Roy FitzAllan"],
         ["Roy FITZ", "Roy Fitz"],
+        ["O'BRIAN ROSIE", "O'Brian Rosie"],
+        ["Matthew Mark-Luke", "Matthew Mark-Luke"],
     ]
     
     func testCapitalize() {

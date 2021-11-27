@@ -266,16 +266,18 @@ public class Name {
     }
     
     
-	// Return name, capitalized in an often-acceptable way. Makes no changes
-	// except to the case of letters; in particular, does not change the length
-	// or spacing of name. Behaves more "cleverly" if name originally has mixed
-	// case, but is certainly not always right.
+	// Return name, capitalized in an often-acceptable way.
     //
-    // The first step is to call standardize(name), so that we can assume all
-    // parts of the name are separated by single blanks, without leading or
-    // trailing blanks. This means that before this function is called, the
-    // name should already have been broken into separate family and given
-    // names.
+    // Non-whitespace characters are changed only in their case. If the name
+    // parameter has mixed case, the capitalization is "clever" but certainly
+    // not always right. We try to work with appropriate respect for people's
+    // names, but perfection is unavailable.
+    //
+    // As for the whitespace characters, the first step is to call
+    // standardize(name), so that we can assume all parts of the name are
+    // separated by single blanks, without leading or trailing blanks. This
+    // means that if you want to use spacing information to identify the family
+    // name, you have to do that before this function is called.
     
     public static func capitalize(_ name: String) -> String {
         // Which cases are present in the name?
@@ -300,8 +302,14 @@ public class Name {
             var word = words[i]
             let loweredWord = Substring(word.lowercased())
             
+            // Prepare to apply later fixes.
             var capitalizeFirstChar = true
-            // One internal character can be capitalized.
+            
+            // Letters after a hyphen are capitalized -- always, but only for
+            // the first hyphen. This happens towards the end of this function.
+                        
+            // We can manage to capitalize one other internal character. Any
+            // more and the code needs rethinking.
             var internalCapIndex = -1
             
             // Is the word a prefix indicating noble descent?
@@ -314,13 +322,17 @@ public class Name {
             {
                 capitalizeFirstChar = false
             }
-            
+           
             // Look for parentage-related prefixes (internal to word)
             // that might have required or permitted capitalization.
+
             // Required:
             if loweredWord.starts(with: "mc") && word.count > 2 {
                 internalCapIndex = 2
+            } else if loweredWord.starts(with: "o'") && word.count > 2 {
+                internalCapIndex = 2
             }
+
             // Permitted, and we'll keep the original capitalization if
             // name has both cases:
             if nameHasBothCases {
@@ -342,14 +354,38 @@ public class Name {
                 }
             }
             
-            // Lower-case the whole word. Generally, the first letter will
-            // be capitalized in the next step.
-            word = Substring(word.lowercased())
+            // Lower-case the whole word, then start capitalizing.
+            
+            // Generally, the first letter is capitalized in the next step.
+            word = loweredWord
                
             if capitalizeFirstChar {
                 let firstChar = word.removeFirst()
                 word.insert(contentsOf: firstChar.uppercased(),
                             at: word.startIndex)
+            }
+            
+            // Letters after hyphens are capitalized.
+            
+            var hyphenIndex = word.firstIndex(of: "-")
+            if hyphenIndex != nil {
+
+            print("found hyphen in \"\(word)\"")
+            }
+
+            if hyphenIndex != nil
+                // Is there space for a letter after the hyphen?
+               && hyphenIndex! < word.index(word.endIndex, offsetBy: -1)
+            {
+                print("found hyphen 2 in \"\(word)\"")
+                print("hyphen is \"\(word[hyphenIndex!])\"")
+                let afterHyphenIndex = word.index(hyphenIndex!, offsetBy: 1)
+                let afterHyphen = word.remove(at: afterHyphenIndex)
+                print("afterHyphen is \"\(afterHyphen)\"")
+                print("letter k should be \"\(word[word.index(word.startIndex, offsetBy: 3)])\"")
+                word.insert(contentsOf: afterHyphen.uppercased(),
+                            at: afterHyphenIndex)
+                print("now word is \"\(word)\"")
             }
             
             if internalCapIndex > 0 {

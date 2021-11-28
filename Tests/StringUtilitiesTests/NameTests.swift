@@ -80,6 +80,8 @@ class NameTests: XCTestCase {
         ["h\ti", "h i"],
         ["\ttab\t2tabs\t\tendtabs\t\t\t", "tab 2tabs endtabs"],
         [",ab,,cd,, ,ef,, ,", "ab cd ef"],
+        ["a-b-c-d", "a-b-c-d"],
+        ["-- -a    a   - b a-b", "-- -a a - b a-b"],
     ]
     
     func testStandardize() {
@@ -99,20 +101,24 @@ class NameTests: XCTestCase {
         [",ab,,cd,, ,ef,, ,", "Ab Cd Ef"],
         ["John von Neumann", "John von Neumann"],
         ["John Von Neumann", "John Von Neumann"],
-        ["JOHN VON NEUMANN", "John Von Neumann"],
-        ["john von neumann", "John Von Neumann"],
+        ["JOHN VON NEUMANN", "John von Neumann"],
+        ["john von neumann", "John von Neumann"],
         ["Gérard de Vaucouleurs", "Gérard de Vaucouleurs"],
-        ["Gerard de", "Gerard De"],
+        ["Gerard de", "Gerard de"],
         ["ian mcdonald", "Ian McDonald"],
         ["ian mc", "Ian Mc"],
-        ["Ian macdonald", "Ian Macdonald"],
-        ["Ian macDonald", "Ian MacDonald"],
-        ["Ian mac", "Ian Mac"],
-        ["Roy fitzallan", "Roy Fitzallan"],
-        ["Roy FITZALLAN", "Roy FitzAllan"],
-        ["Roy FITZ", "Roy Fitz"],
+        ["Ian macdonald", "Ian macdonald"],
+        ["Ian macDonald", "Ian macDonald"],
+        ["Ian mac", "Ian mac"],
+        ["Roy fitzallan", "Roy fitzallan"],
+        ["Roy FITZALLAN", "Roy FITZALLAN"],
+        ["Roy FITZ", "Roy FITZ"],
         ["O'BRIAN ROSIE", "O'Brian Rosie"],
         ["Matthew Mark-Luke", "Matthew Mark-Luke"],
+        ["--Jim", "--Jim"],
+        ["--jim", "--Jim"],
+        ["jim - john", "Jim - John"],
+        ["&joe", "&joe"],
     ]
     
     func testCapitalize() {
@@ -120,7 +126,7 @@ class NameTests: XCTestCase {
             let before = capitalizeTests[i][0]
             let after = Name.capitalize(before)
             let shouldbe = capitalizeTests[i][1]
-            XCTAssertEqual(after, shouldbe)
+            XCTAssertEqual(after, shouldbe, "data index \(i)")
         }
     }
     

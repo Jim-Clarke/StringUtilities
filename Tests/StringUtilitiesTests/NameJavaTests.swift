@@ -64,36 +64,36 @@ class NameJavaTests: XCTestCase {
         "Smith John",
         "McDon Jo Be", // not "  McDon Jo Be" as in the Java tests,
         // because the Swift function standardizes white space
-        "De Valera E",
-        "De Valera E",
         "de Valera E",
+        "de Valera E",
+        "de valeRa e", // Java: "de Valera E"
         "X De",
-        "Di X",
-        "Di X",
+        "di X", // Java: "Di X"
+        "di X", // Java: "Di X"
         "di X",
-        "Di X",
-        "Van X",
-        "Van X",
+        "Di x", // Java: "Di X"
+        "van X", // Java: "Van X"
+        "van X", // Java: "Van X"
         "van X",
-        "Van X",
-        "Von X",
-        "Von X",
+        "Van x", // Java: "Van X"
+        "von X", // Java: "Von X"
+        "von X", // Java: "Von X"
         "von X",
-        "Von X",
+        "Von x", // Java: "Von X"
         "McDo",
         "McDo",
-        "McDo",
-        "McDo",
+        "mcdO", // Java: "McDo"
+        "mcDo", // Java: "McDo"
         "McMcdo",
-        "Macdo",
-        "Macdo",
-        "Macdo",
-        "MacDo",
-        "MacMacdo",
-        "Fitzpa",
-        "Fitzpa",
-        "Fitzpa",
-        "FitzPa",
+        "MacDo", // Java: "Macdo"
+        "MacDo", // Java: "Macdo"
+        "macdO", // Java: "Macdo"
+        "macDo", // Java: "MacDo"
+        "macMacDo", // Java: "MacMacdo"
+        "FitzPa", // Java: "Fitzpa"
+        "FitzPa", // Java: "Fitzpa"
+        "fitzpA", // Java: "Fitzpa"
+        "fitzPa", // Java: "FitzPa"
     ]
     
     func testCapitalize() {

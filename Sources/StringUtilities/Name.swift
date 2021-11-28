@@ -266,16 +266,35 @@ public class Name {
     }
     
     
-	// Return name, capitalized in an often-acceptable way.
+    // Return name, capitalized in an often-acceptable way.
     //
-    // Non-whitespace characters are changed only in their case. If the name
-    // parameter has mixed case, the capitalization is "clever" but certainly
-    // not always right. We try to work with appropriate respect for people's
-    // names, but perfection is unavailable.
+    // This function is much less adventuresome than the Java version. My
+    // powers of imagination in that older version were perhaps less exercised
+    // by the problem, and I now think even more than I did then that the
+    // user (owner!) of the name should be respected if there is any sign that
+    // they tried to specify the capitalization. Essentially, this means that
+    // if the capitalization varies in the name argument -- that is, if both
+    // upper-case and lower-case are present -- then we should not change it.
+    //
+    // On the other hand, there is the hyphen. A hyphen, I think, separates two
+    // parts of a name of equal importance -- names in themselves. There may be
+    // multiple hyphens in a name, and each part should be capitalized
+    // independently. That may be an odd choice: consider
+    // "John-John Wilson-McNab", which would have the parts "John", "John
+    // Wilson", and "McNab" -- not at all the real-world parsing -- but it
+    // should be correct all the same.
+    //
+    // Wise as we may try to be, we'll still screw up, because names are
+    // surprising even within a single culture. Prepare to apologize, and
+    // suggest to e.e.cummings that "e.e. cummings (Yes!)" might keep us in
+    // line.
+    //
+    // Non-whitespace characters are changed only in their case (and, as I said
+    // above, only if they are all of the same case originally).
     //
     // As for the whitespace characters, the first step is to call
-    // standardize(name), so that we can assume all parts of the name are
-    // separated by single blanks, without leading or trailing blanks. This
+    // standardize(), so that we can assume all parts of the name are separated
+    // by single blanks, and there are no leading or trailing blanks. This
     // means that if you want to use spacing information to identify the family
     // name, you have to do that before this function is called.
     
@@ -289,113 +308,107 @@ public class Name {
         let nameHasUppers = !charsInName
             .intersection(CharacterSet.uppercaseLetters).isEmpty
         let nameHasBothCases = nameHasLowers && nameHasUppers
+
+        // If nameHasBothCases is true, we will not change capitalization.
+        //
+        // But we do have to fix the word separators so that they are all
+        // single blanks before we can return the "unchanged" name.
+        if nameHasBothCases {
+            return standardize(name)
+        }
         
-        // Standardize the name: make the "word" separators all single blanks,
-        // with no leading or trailing blanks. Then break it into separate
-        // words. (There may be non-blank word separators that are made into
-        // blanks by standardize().)
-        let words = standardize(name).split(separator: " ")
+        // Put the name in lower case, and standardize it by removing any
+        // leading or trailing blanks and making all the "word" separators into
+        // single blanks. Then break it into separate words.
+        //
+        // Standardize() does make some non-blank word separators into blanks.
+        // As of Nov/21, it only does that to SEPARATOR (",").
+        
+        let words = standardize(name.lowercased()).split(separator: " ")
         
         // Capitalize each word of the name and append it to fixedWords.
-        var fixedWords = [Substring]()
+        var fixedWords = [String]()
         for i in 0 ..< words.count {
-            var word = words[i]
-            let loweredWord = Substring(word.lowercased())
+            let word = words[i]
             
-            // Prepare to apply later fixes.
-            var capitalizeFirstChar = true
+            // Split this single word on a hyphen.
+            var subwords = word.split(separator: "-",
+                                      omittingEmptySubsequences: false)
+            // Someone is going to try putting in leading hyphens, or multiple
+            // hyphens. We try to preserve that possible silliness.
             
-            // Letters after a hyphen are capitalized -- always, but only for
-            // the first hyphen. This happens towards the end of this function.
-                        
-            // We can manage to capitalize one other internal character. Any
-            // more and the code needs rethinking.
-            var internalCapIndex = -1
-            
-            // Is the word a prefix indicating noble descent?
-            let noblePrefixes: [Substring] = ["de", "di", "van", "von"]
-            if nameHasBothCases
-                && noblePrefixes.contains(word)
-                // Ignore this rule on the last word in the name, so as to
-                // avoid (e.g.) leaving a truncated "Dennis" uncapitalized.
-                && i < words.count - 1
-            {
-                capitalizeFirstChar = false
-            }
-           
-            // Look for parentage-related prefixes (internal to word)
-            // that might have required or permitted capitalization.
-
-            // Required:
-            if loweredWord.starts(with: "mc") && word.count > 2 {
-                internalCapIndex = 2
-            } else if loweredWord.starts(with: "o'") && word.count > 2 {
-                internalCapIndex = 2
-            }
-
-            // Permitted, and we'll keep the original capitalization if
-            // name has both cases:
-            if nameHasBothCases {
-                var maybeCapIndex = -1
-                
-                if loweredWord.starts(with: "mac") {
-                    maybeCapIndex = 3
-                } else if loweredWord.starts(with: "fitz") {
-                    maybeCapIndex = 4
+            // After this loop, we'll recombine the capitalized subwords into
+            // a fixed word, with hyphens between them.
+            for subi in 0 ..< subwords.count {
+                var subword = subwords[subi]
+                // What if someone tries adjacent hyphens, or a leading hyphen?
+                if subword.isEmpty {
+                    continue
                 }
                 
-                // Check original capitalization.
-                if maybeCapIndex > 0 && maybeCapIndex < word.count {
-                    let location = word.index(word.startIndex,
-                                              offsetBy: maybeCapIndex)
-                    if word[location].isUppercase {
-                        internalCapIndex = maybeCapIndex
-                    }
+                // Capitalize the first character, usually.
+                var capitalizeFirstChar = true
+                
+                // .. but not if the word is a prefix indicating noble descent.
+                let noblePrefixes: [Substring] = ["de", "di", "van", "von"]
+                if noblePrefixes.contains(word)
+                    // Ignore this rule on the last word in the name, so as to
+                    // avoid (e.g.) leaving a truncated "Dennis" uncapitalized.
+                    && (i < words.count - 1 || subi < subwords.count - 1)
+                {
+                    capitalizeFirstChar = false
                 }
+                
+                // Do it, serf!
+                if capitalizeFirstChar {
+                    let firstChar = subword.removeFirst()
+                    subword.insert(contentsOf: firstChar.uppercased(),
+                                at: subword.startIndex)
+                }
+                
+                // We are willing to capitalize one other internal character.
+                // Any more and the code needs rethinking. Or perhaps the user
+                // could be more careful with capitalization?
+                var internalCapIndex = -1
+                
+                // Look for prefixes (internal to the subword) that might
+                // require internal capitalization. For some of these,
+                // capitalization might be optional, but the user didn't bother
+                // being particular, so we can't be.
+  
+                if subword.starts(with: "Mc") {
+                    internalCapIndex = 2
+                } else if subword.starts(with: "Mac") {
+                    internalCapIndex = 3
+                } else if subword.starts(with: "O'") {
+                    internalCapIndex = 2
+                } else if subword.starts(with: "Fitz") {
+                    internalCapIndex = 4
+                }
+                
+                // Make the internal adjustment.
+                if internalCapIndex > 0 && internalCapIndex < subword.count {
+                    let location = subword.index(subword.startIndex,
+                                                 offsetBy: internalCapIndex)
+                    let nthChar = subword.remove(at: location)
+                    subword.insert(contentsOf: nthChar.uppercased(),
+                    at: location)
+                }
+                
+                subwords[subi] = subword
             }
             
-            // Lower-case the whole word, then start capitalizing.
-            
-            // Generally, the first letter is capitalized in the next step.
-            word = loweredWord
-               
-            if capitalizeFirstChar {
-                let firstChar = word.removeFirst()
-                word.insert(contentsOf: firstChar.uppercased(),
-                            at: word.startIndex)
+            // Recombine the subwords into a hyphenated word.            
+            var fixedword = ""
+            for subword in subwords {
+                fixedword += subword + "-"
             }
-            
-            // Letters after hyphens are capitalized.
-            
-            var hyphenIndex = word.firstIndex(of: "-")
-            if hyphenIndex != nil {
+            if fixedword.count > 0 {
+                // If word is empty, subwords may have zero elements.
+                fixedword.removeLast()
+            }
 
-            print("found hyphen in \"\(word)\"")
-            }
-
-            if hyphenIndex != nil
-                // Is there space for a letter after the hyphen?
-               && hyphenIndex! < word.index(word.endIndex, offsetBy: -1)
-            {
-                print("found hyphen 2 in \"\(word)\"")
-                print("hyphen is \"\(word[hyphenIndex!])\"")
-                let afterHyphenIndex = word.index(hyphenIndex!, offsetBy: 1)
-                let afterHyphen = word.remove(at: afterHyphenIndex)
-                print("afterHyphen is \"\(afterHyphen)\"")
-                print("letter k should be \"\(word[word.index(word.startIndex, offsetBy: 3)])\"")
-                word.insert(contentsOf: afterHyphen.uppercased(),
-                            at: afterHyphenIndex)
-                print("now word is \"\(word)\"")
-            }
-            
-            if internalCapIndex > 0 {
-                let location = word.index(word.startIndex,
-                                          offsetBy: internalCapIndex)
-                let nthChar = word.remove(at: location)
-                word.insert(contentsOf: nthChar.uppercased(), at: location)
-            }
-            
-            fixedWords.append(word)
+            fixedWords.append(fixedword)
         }
         
         // Put the capitalized words together again.
@@ -409,7 +422,7 @@ public class Name {
         return result
     }
 
-    
+
     // Return name with the family-name part moved to the beginning -- that is,
     // move the last word of the name to the beginning, where it is separated
     // by at least one whitespace character from the rest of the name. Double

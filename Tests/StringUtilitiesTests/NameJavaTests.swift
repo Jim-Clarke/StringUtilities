@@ -18,10 +18,10 @@ import XCTest
 
 class NameJavaTests: XCTestCase {
     
-    func testAreWeAlive () {
+//    func testAreWeAlive () {
 //        print("NameJavaTests is running")
 //        XCTAssertTrue(true)
-    }
+//    }
     
     // -- capitalize() --
     
@@ -63,37 +63,39 @@ class NameJavaTests: XCTestCase {
     let capitalizeShouldBe = [
         "Smith John",
         "McDon Jo Be", // not "  McDon Jo Be" as in the Java tests,
-        // because the Swift function standardizes white space
+        // because the Swift function standardizes whitespace
+        "de Valera E", // Java: "De Valera E", because Java only lower-cases a
+        // "noble" prefix if name has both cases and the prefix is already lower
+        "de Valera E", // Java: "De Valera E"
         "de Valera E",
-        "de Valera E",
-        "de valeRa e", // Java: "de Valera E"
         "X De",
-        "di X", // Java: "Di X"
+        "di X", // Java: "Di X", as with "de Valera E"
         "di X", // Java: "Di X"
         "di X",
-        "Di x", // Java: "Di X"
+        "di X", // Java: "Di X"
         "van X", // Java: "Van X"
         "van X", // Java: "Van X"
         "van X",
-        "Van x", // Java: "Van X"
+        "van X", // Java: "Van X"
         "von X", // Java: "Von X"
         "von X", // Java: "Von X"
         "von X",
-        "Von x", // Java: "Von X"
+        "von X", // Java: "Von X"
         "McDo",
         "McDo",
-        "mcdO", // Java: "McDo"
-        "mcDo", // Java: "McDo"
+        "McDo",
+        "McDo",
         "McMcdo",
-        "MacDo", // Java: "Macdo"
-        "MacDo", // Java: "Macdo"
-        "macdO", // Java: "Macdo"
-        "macDo", // Java: "MacDo"
-        "macMacDo", // Java: "MacMacdo"
-        "FitzPa", // Java: "Fitzpa"
-        "FitzPa", // Java: "Fitzpa"
-        "fitzpA", // Java: "Fitzpa"
-        "fitzPa", // Java: "FitzPa"
+        "Macdo",
+        "Macdo",
+        "Macdo",
+        "Macdo", // Java: "MacDo", because Java treats Mac as special: if name has
+        // both cases, and the original is upper-case, it is kept upper.
+        "Macmacdo", // Java: "MacMacdo"
+        "Fitzpa",
+        "Fitzpa",
+        "Fitzpa",
+        "Fitzpa", // Java: "FitzPa", because Java treats Fitz like Mac
     ]
     
     func testCapitalize() {
@@ -338,166 +340,97 @@ class NameJavaTests: XCTestCase {
     }
 
 
+    // -- "get methods"; "set methods" not provided in Swift version --
 
+    let getNoSetData = [
+        "",
+        "smith bill",
+        "rubble barney alastair",
+    ]
+
+    let getNoSetShouldBe = [
+        ["", "", "", ""], // not the no-name constructor, but the empty name
+        ["Smith  Bill", "Smith", "Bill", "smith  bill"],
+        ["Rubble  Barney Alastair", "Rubble", "Barney Alastair",
+            "rubble  barney alastair"],
+    ]
+
+    func testGetNoSet() {
+        XCTAssert(getNoSetData.count == getNoSetShouldBe.count)
+        for i in 0 ..< getNoSetData.count {
+            let data = getNoSetData[i]
+            let name = Name(name: data)
+            let shouldBe0 = getNoSetShouldBe[i][0]
+            let shouldBe1 = getNoSetShouldBe[i][1]
+            let shouldBe2 = getNoSetShouldBe[i][2]
+            let shouldBe3 = getNoSetShouldBe[i][3]
+            let result0 = "\(name)"
+            let result1 = name.familyName
+            let result2 = name.givenNames
+            let result3 = name.normalForm
+            XCTAssertEqual(result0, shouldBe0, "data index \(i)")
+            XCTAssertEqual(result1, shouldBe1, "data index \(i)")
+            XCTAssertEqual(result2, shouldBe2, "data index \(i)")
+            XCTAssertEqual(result3, shouldBe3, "data index \(i)")
+        }
+    }
+
+
+    // -- copy() --
+    
+    // Copy constructors aren't a thing in Swift; you can just assign the old
+    // object to the new object, and if it's a reference, you get the usual
+    // same-thing results.
+    
+    // And if we did have a copy constructor, we couldn't do something like the
+    // Java tests on the copy-constructor results, because the instance
+    // properties are constants.
+
+
+    // -- equals(), compareTo(); hashCode() not needed in Swift  --
+
+    let comparingData = [
+        "",
+        "a",
+        "z",
+        "m",
+        "(",
+        "[",
+        "{",
+    ]
+
+    let comparingShouldBe = [
+        ["true",  "0", "false", "-1", "false", "-1", "false", "-1"],
+        ["false", "1", "false", "1", "true", "0", "false", "-1"],
+        ["false", "1", "false", "1", "false", "1", "true", "0"],
+        ["false", "1", "false", "1", "false", "1", "false", "-1"],
+        ["false", "1", "false", "-1", "false", "-1", "false", "-1"], // not the
+            // same as the Java tests, because "very early" is "0" and not " "
+        ["false", "1", "false", "1", "false", "-1", "false", "-1"],
+        ["false", "1", "false", "1", "false", "1", "false", "1"],
+    ]
+
+    func testComparing() {
+        
+        func uniComp(_ left: Name, _ right: Name) -> Int {
+            return left < right ? -1 : left > right ? +1 : 0
+        }
+        
+        XCTAssert(comparingData.count == comparingShouldBe.count)
+        let empty = Name(name: "")
+        let veryEarly = Name(name: "0")
+        let early = Name(name: "a")
+        let late = Name(name: "z")
+        for i in 0 ..< comparingData.count {
+            let data = Name(name: comparingData[i])
+            let shouldBe = comparingShouldBe[i]
+            var results = [String]()
+            for other in [empty, veryEarly, early, late] {
+                results.append(String(data == other))
+                results.append(String(uniComp(data, other)))
+            }
+            XCTAssertEqual(results, shouldBe, "data index \(i)")
+        }
+    }
 
 }
-
-
-//=======
-//=======
-
-
-/* Java input data START
-
-quit
-quit
-
-smith bill
-rubble barney alastair
-quit
-
-smith bill
-quit
-
-a
-z
-m
-(
-[
-{
-quit
-
--- END Java input data
-*/
-
-/* Java expected test results START
-
--- capitalize() --
--- familyToFront() --
--- check() --
--- constructors --
--- get and set methods --
-"": "" "" "" "Backus" "Backus" "" "Backus  Ada Alan" "Backus" "Ada Alan"
-"smith bill": "Smith  Bill" "Smith" "Bill" "Backus  Bill" "Backus" "Bill" "Backus  Ada Alan" "Backus" "Ada Alan"
-"rubble barney alastair": "Rubble  Barney Alastair" "Rubble" "Barney Alastair" "Backus  Barney Alastair" "Backus" "Barney Alastair" "Backus  Ada Alan" "Backus" "Ada Alan"
--- copy() --
-"": "" "" "x" "" "x" "  y"
-"smith bill": "Smith  Bill" "Smith  Bill" "x  Bill" "Smith  Bill" "x  Bill" "Smith  y"
--- equals(), hashCode(), compareTo() --
-"": 17 true 0 false -1 false -1 false -1
-"a": 3606 false 1 false 1 true 0 false -1
-"z": 4531 false 1 false 1 false 1 true 0
-"m": 4050 false 1 false 1 false 1 false -1
-"(": 1497 false 1 false 1 false -1 false -1
-"[": 3384 false 1 false 1 false -1 false -1
-"{": 4568 false 1 false 1 false 1 false 1
-
--- END Java expected test results
-*/
-
-/*  Java code START
-
-		// Test overall name construction and conversion.
-		System.out.println("-- constructors --");
-		{
-			Name n1 = new Name();
-			System.out.print("no arguments: ");
-			System.out.print("\"" + n1.toString() + "\"");
-			System.out.println();
-		}
-		while (true) {
-			String s = in.readLine();
-			if (s.equals("quit"))
-				break;
-			Name n1 = new Name(s);
-			Name n2 = new Name(s, "");
-			System.out.print("\"" + s + "\": ");
-			System.out.print("\"" + n1.toString() + "\"");
-			System.out.println(" \"" + n2.toString() + "\"");
-		}
-
-		// Test get and set methods.
-		System.out.println("-- get and set methods --");
-		while (true) {
-			String s = in.readLine();
-			if (s.equals("quit"))
-				break;
-			System.out.print("\"" + s + "\": ");
-			Name n1 = new Name(s);
-			System.out.print("\"" + n1.toString() + "\"");
-			System.out.print(" \"" + n1.getFamilyName() + "\"");
-			System.out.print(" \"" + n1.getGivenNames() + "\"");
-			n1.setFamilyName("Backus");
-			System.out.print(" \"" + n1.toString() + "\"");
-			System.out.print(" \"" + n1.getFamilyName() + "\"");
-			System.out.print(" \"" + n1.getGivenNames() + "\"");
-			n1.setGivenNames("Ada Alan");
-			System.out.print(" \"" + n1.toString() + "\"");
-			System.out.print(" \"" + n1.getFamilyName() + "\"");
-			System.out.print(" \"" + n1.getGivenNames() + "\"");
-			System.out.println();
-		}
-
-		// Test copy().
-		System.out.println("-- copy() --");
-		while (true) {
-			String s = in.readLine();
-			if (s.equals("quit"))
-				break;
-			System.out.print("\"" + s + "\": ");
-			Name n1 = new Name(s);
-			System.out.print("\"" + n1.toString() + "\"");
-			Name n2 = n1.copy();
-			System.out.print(" \"" + n2.toString() + "\"");
-			n1.setFamilyName("x");
-			System.out.print(" \"" + n1.toString() + "\"");
-			System.out.print(" \"" + n2.toString() + "\"");
-			n2.setGivenNames("y");
-			System.out.print(" \"" + n1.toString() + "\"");
-			System.out.print(" \"" + n2.toString() + "\"");
-			System.out.println();
-		}
-
-		// Standard names for comparison testing.
-		final Name empty = new Name("");
-		final Name veryEarly = new Name("", "a");
-		final Name early = new Name("a");
-		final Name late = new Name("z");
-
-		// Test equals(), hashCode() and compareTo().
-		System.out.println("-- equals(), hashCode(), compareTo() --");
-		while (true) {
-			String s = in.readLine();
-			if (s.equals("quit"))
-				break;
-			System.out.print("\"" + s + "\": ");
-			Name n1 = new Name(s);
-			System.out.print(n1.hashCode());
-			System.out.print(" " + n1.equals(empty)
-					+ " " + uni(n1.compareTo(empty)));
-			System.out.print(" " + n1.equals(veryEarly)
-					+ " " + uni(n1.compareTo(veryEarly)));
-			System.out.print(" " + n1.equals(early)
-					+ " " + uni(n1.compareTo(early)));
-			System.out.print(" " + n1.equals(late)
-					+ " " + uni(n1.compareTo(late)));
-			System.out.println();
-		}
-	}
-
-	/**
-	 * Return compareTo()'s output, standardized to +1, 0, -1.
-	 * @param i	A value received from compareTo().
-	 * @return int	The parameter, standardized.
-	 */
-	private static int uni(int i) {
-		if (i < 0)
-			return -1;
-		else if (i > 0)
-			return +1;
-		else
-			return 0;
-	}
-
--- END Java code
-*/

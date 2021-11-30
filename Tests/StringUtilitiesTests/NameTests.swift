@@ -11,6 +11,7 @@ import XCTest
 class NameTests: XCTestCase {
 
     let init1Tests = [
+        [" ", "", "", "", ""],
         ["Jim", "Jim", "Jim", "", "jim"],
         [", Jim", "Jim", "Jim", "", "jim"],
         ["Clarke  Jim", "Clarke  Jim", "Clarke", "Jim", "clarke  jim"],
@@ -21,8 +22,17 @@ class NameTests: XCTestCase {
         ["Clarke ,Jim", "Clarke  Jim", "Clarke", "Jim", "clarke  jim"],
         ["Clarke,  Jim", "Clarke  Jim", "Clarke", "Jim", "clarke  jim"],
         ["Clarke,    Jim", "Clarke  Jim", "Clarke", "Jim", "clarke  jim"],
+        ["cummings, e. e.", "Cummings  E. E.", "Cummings", "E. E.",
+            "cummings  e. e."],
+        ["cummings, e. e. (Yes)", "cummings  e. e. (Yes)", "cummings",
+            "e. e. (Yes)", "cummings  e. e. (yes)"],
         [".cummings,.e .e", ".cummings  .e .e", ".cummings", ".e .e", ".cummings  .e .e"],
         ["=cummings,\'e $e", "=cummings  'e $e", "=cummings", "'e $e", "=cummings  'e $e"], // or any non-letter of the user's preference
+        ["!cummings, !e. !e.", "!cummings  !e. !e.", "!cummings", "!e. !e.", "!cummings  !e. !e."],
+        ["singlename", "Singlename", "Singlename", "", "singlename"],
+        ["   singlewithspaces  ", "Singlewithspaces", "Singlewithspaces", "",
+            "singlewithspaces"],
+        ["uP  and down", "uP  and down", "uP", "and down", "up  and down"],
     ]
     
     func testInit1() {
@@ -35,6 +45,7 @@ class NameTests: XCTestCase {
             
             let name = Name(name: nameData)
             XCTAssertEqual(name.name, expName, "name")
+            XCTAssertEqual("\(name)", expName, "custom string convertible")
             XCTAssertEqual(name.familyName, expFamily, "family")
             XCTAssertEqual(name.givenNames, expGiven, "given")
             XCTAssertEqual(name.normalForm, expNorm, "normal")
@@ -42,12 +53,18 @@ class NameTests: XCTestCase {
     }
     
     let init2Tests = [
+        ["   ", "", "", "", "", ""],
         ["Jim", "", "Jim", "Jim", "", "jim"],
         ["", "Jim", "Jim", "Jim", "", "jim"],
         ["Clarke    ", "Jim", "Clarke  Jim", "Clarke", "Jim", "clarke  jim"],
         ["Clarke", "Jim   Bob", "Clarke  Jim Bob", "Clarke", "Jim Bob", "clarke  jim bob"],
         ["Clarke", "Jim,,Bob", "Clarke  Jim Bob", "Clarke", "Jim Bob", "clarke  jim bob"],
+        ["cummings", "e. e.", "Cummings  E. E.", "Cummings", "E. E.",
+            "cummings  e. e."],
+        ["cummings", "e. e. (Yes)", "cummings  e. e. (Yes)", "cummings",
+            "e. e. (Yes)", "cummings  e. e. (yes)"],
         [".cummings", ".e .e", ".cummings  .e .e", ".cummings", ".e .e", ".cummings  .e .e"],
+        ["uP", "and down", "uP  and down", "uP", "and down", "up  and down"],
    ]
     
     func testInit2() {
@@ -62,6 +79,7 @@ class NameTests: XCTestCase {
             let name = Name(familyName: familyNameData,
                             givenNames: givenNamesData)
             XCTAssertEqual(name.name, expName, "name")
+            XCTAssertEqual("\(name)", expName, "custom string convertible")
             XCTAssertEqual(name.familyName, expFamily, "family")
             XCTAssertEqual(name.givenNames, expGiven, "given")
             XCTAssertEqual(name.normalForm, expNorm, "normal")
@@ -100,21 +118,23 @@ class NameTests: XCTestCase {
         ["\ttab\t2tabs\t\tendtabs\t\t\t", "Tab 2tabs Endtabs"],
         [",ab,,cd,, ,ef,, ,", "Ab Cd Ef"],
         ["John von Neumann", "John von Neumann"],
-        ["John Von Neumann", "John Von Neumann"],
+        ["John Von Neumann", "John von Neumann"],
         ["JOHN VON NEUMANN", "John von Neumann"],
         ["john von neumann", "John von Neumann"],
         ["Gérard de Vaucouleurs", "Gérard de Vaucouleurs"],
-        ["Gerard de", "Gerard de"],
+        ["Gerard de", "Gerard De"],
         ["ian mcdonald", "Ian McDonald"],
         ["ian mc", "Ian Mc"],
-        ["Ian macdonald", "Ian macdonald"],
-        ["Ian macDonald", "Ian macDonald"],
-        ["Ian mac", "Ian mac"],
-        ["Roy fitzallan", "Roy fitzallan"],
-        ["Roy FITZALLAN", "Roy FITZALLAN"],
-        ["Roy FITZ", "Roy FITZ"],
+        ["Ian macdonald", "Ian Macdonald"],
+        ["Ian macDonald", "Ian Macdonald"],
+        ["Ian mac", "Ian Mac"],
+        ["roy fitzallan", "Roy Fitzallan"],
+        ["Roy fitzallan", "Roy Fitzallan"],
+        ["Roy FITZALLAN", "Roy Fitzallan"],
+        ["Roy FITZ", "Roy Fitz"],
         ["O'BRIAN ROSIE", "O'Brian Rosie"],
         ["Matthew Mark-Luke", "Matthew Mark-Luke"],
+        ["matthew mark-luke", "Matthew Mark-Luke"],
         ["--Jim", "--Jim"],
         ["--jim", "--Jim"],
         ["jim - john", "Jim - John"],

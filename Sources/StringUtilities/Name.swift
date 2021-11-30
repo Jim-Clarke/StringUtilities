@@ -1,15 +1,23 @@
 //
 //  Name.swift
 //
-//  Format and compare people's names. Mostly based on a Java version from 2003,
-//  itself based on a C version with some code inherited from a Turing function.
+//  Keep people's names in a standard form, formatted consistently and ready for
+//  comparison with other names.
+//
+//  Mostly based on a Java version from 2003, itself based on a C version with
+//  some code inherited from a Turing function.
 //
 //  The only significant difference between the Java version and this one is
 //  that here, the name is immutable (and all derived values are prepared when
 //  the Name object is created. If you want a new name, make a new Name.
 //
+//  Capitalization is somewhat different too, but I think there is no reasonable
+//  set of capitalization rules that would work universally, even within the
+//  subset of names used by English-speaking people. The goal is only to make
+//  lists of names, such as class lists, not contain outstanding oddities.
+//
 //  As I am the only known user of the Name class, I don't think the differences
-//  will cause trouble.
+//  or peculiarities will cause trouble.
 //  
 //
 //  Created by Jim Clarke on 2021-07-30.
@@ -20,11 +28,12 @@ import Foundation
 
 extension Name : CustomStringConvertible {
     public var description: String {
-        if givenNames.isEmpty {
-            return familyName
-        } else {
-            return familyName + "  " + givenNames
-        }
+//        if givenNames.isEmpty {
+//            return familyName
+//        } else {
+//            return familyName + "  " + givenNames
+//        }
+        return name
     }
 }
 
@@ -72,8 +81,6 @@ public class Name {
 
     // non-static members first
 
-    // the parts that matter
-    
     public let name: String // did not exist in Java version
     public let familyName: String
     public let givenNames: String
@@ -101,9 +108,32 @@ public class Name {
     // properties.
     
     public init(familyName: String, givenNames: String) {
-        let cleanedFamily = Name.standardize(Name.capitalize(familyName))
-        let cleanedGiven = Name.standardize(Name.capitalize(givenNames))
+        // Capitalize name if it does not already have both cases (because if it
+        // does, presumably it was a deliberate choice).
+
+        // Which cases are present in the name?
+        var charsInName = CharacterSet()
+        charsInName.insert(charactersIn: familyName)
+        charsInName.insert(charactersIn: givenNames)
+        let nameHasLowers = !charsInName
+            .intersection(CharacterSet.lowercaseLetters).isEmpty
+        let nameHasUppers = !charsInName
+            .intersection(CharacterSet.uppercaseLetters).isEmpty
+        let nameHasBothCases = nameHasLowers && nameHasUppers
+
+        var cleanedFamily = familyName
+        var cleanedGiven = givenNames
+        if !nameHasBothCases {
+            // Capitalize, because the user didn't do it.
+            cleanedFamily = Name.capitalize(familyName)
+            cleanedGiven = Name.capitalize(givenNames)
+        }
         
+        // Regardless of capitalization, fix the word separators so that they
+        // are all single blanks.
+        cleanedFamily = Name.standardize(cleanedFamily)
+        cleanedGiven = Name.standardize(cleanedGiven)
+
         if cleanedFamily.isEmpty {
             self.familyName = cleanedGiven
             self.givenNames = ""
@@ -268,13 +298,12 @@ public class Name {
     
     // Return name, capitalized in an often-acceptable way.
     //
-    // This function is much less adventuresome than the Java version. My
-    // powers of imagination in that older version were perhaps less exercised
-    // by the problem, and I now think even more than I did then that the
-    // user (owner!) of the name should be respected if there is any sign that
-    // they tried to specify the capitalization. Essentially, this means that
-    // if the capitalization varies in the name argument -- that is, if both
-    // upper-case and lower-case are present -- then we should not change it.
+    // This function is much less adventuresome than the Java version. It does
+    // not try to consult the original to inspect the user's choice of
+    // capitalization; in fact, it should probably not be used if the original
+    // contains a mix of cases. Its first step is to lower-case the whole thing.
+    // Then it makes a bunch of ordinary assumptions, with exceptions for a few
+    // prefix mini-names such as "de" and "von".
     //
     // On the other hand, there is the hyphen. A hyphen, I think, separates two
     // parts of a name of equal importance -- names in themselves. There may be
@@ -282,15 +311,14 @@ public class Name {
     // independently. That may be an odd choice: consider
     // "John-John Wilson-McNab", which would have the parts "John", "John
     // Wilson", and "McNab" -- not at all the real-world parsing -- but it
-    // should be correct all the same.
+    // should be work correctly all the same.
     //
     // Wise as we may try to be, we'll still screw up, because names are
     // surprising even within a single culture. Prepare to apologize, and
     // suggest to e.e.cummings that "e.e. cummings (Yes!)" might keep us in
     // line.
     //
-    // Non-whitespace characters are changed only in their case (and, as I said
-    // above, only if they are all of the same case originally).
+    // Non-whitespace characters are changed only in their case.
     //
     // As for the whitespace characters, the first step is to call
     // standardize(), so that we can assume all parts of the name are separated
@@ -299,24 +327,6 @@ public class Name {
     // name, you have to do that before this function is called.
     
     public static func capitalize(_ name: String) -> String {
-        // Which cases are present in the name?
-        var charsInName = CharacterSet()
-        charsInName.insert(charactersIn: name)
-        
-        let nameHasLowers = !charsInName
-            .intersection(CharacterSet.lowercaseLetters).isEmpty
-        let nameHasUppers = !charsInName
-            .intersection(CharacterSet.uppercaseLetters).isEmpty
-        let nameHasBothCases = nameHasLowers && nameHasUppers
-
-        // If nameHasBothCases is true, we will not change capitalization.
-        //
-        // But we do have to fix the word separators so that they are all
-        // single blanks before we can return the "unchanged" name.
-        if nameHasBothCases {
-            return standardize(name)
-        }
-        
         // Put the name in lower case, and standardize it by removing any
         // leading or trailing blanks and making all the "word" separators into
         // single blanks. Then break it into separate words.
@@ -335,7 +345,8 @@ public class Name {
             var subwords = word.split(separator: "-",
                                       omittingEmptySubsequences: false)
             // Someone is going to try putting in leading hyphens, or multiple
-            // hyphens. We try to preserve that possible silliness.
+            // hyphens. We try to preserve that possible silliness by hanging on
+            // to empty subsequences.
             
             // After this loop, we'll recombine the capitalized subwords into
             // a fixed word, with hyphens between them.
@@ -378,12 +389,17 @@ public class Name {
   
                 if subword.starts(with: "Mc") {
                     internalCapIndex = 2
-                } else if subword.starts(with: "Mac") {
-                    internalCapIndex = 3
+                // } else if subword.starts(with: "Mac") {
+                    // This case is deleted because of Macdonald and Macintosh,
+                    // and also because of (e.g.) Italian names starting with
+                    // Mac.
+                //     internalCapIndex = 3
                 } else if subword.starts(with: "O'") {
                     internalCapIndex = 2
-                } else if subword.starts(with: "Fitz") {
-                    internalCapIndex = 4
+                // } else if subword.starts(with: "Fitz") {
+                    // This case is deleted because my guess is that more Fitzes
+                    // are followed by a lower-case than an upper-case letter.
+                //     internalCapIndex = 4
                 }
                 
                 // Make the internal adjustment.

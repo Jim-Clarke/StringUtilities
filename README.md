@@ -17,3 +17,7 @@ Some simple string operations I've needed more than once
 
 ### In the file OptionScanner.swift:
 - A class OptionScanner and associated support, to ease reading command-line options
+
+
+### In the file Name.swift:
+- A class Name that provides simple capitalization and separation of names into family-name and given-names parts. Name instances can be compared for sorting.

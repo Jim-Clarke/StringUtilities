@@ -2,7 +2,11 @@
 //  Name.swift
 //
 //  Keep people's names in a standard form, formatted consistently and ready for
-//  comparison with other names.
+//  comparison with other names. This code was originally intended to maintain
+//  class lists with the names displayed consistently but respectfully. It's
+//  very hard to allow for all the variations that appear in names just within
+//  the English-language context, and not everybody in a modern educational
+//  environment is originally English speaking. We try not to offend!
 //
 //  Mostly based on a Java version from 2003, itself based on a C version with
 //  some code inherited from a Turing function.

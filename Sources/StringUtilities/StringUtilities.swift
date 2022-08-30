@@ -463,12 +463,21 @@ public func getBracketedString(
 
 public func nChars(_ n: Int, char: Character = " ") -> String
 {
-    let wanted = n >= 0 ? n : 0
-    var result = ""
-    while result.count < wanted {
-        result.append(char)
+    if n < 0 {
+        return ""
+        
+    } else {
+        return String(repeating: char, count: n)
     }
-    return result
+    
+    // Aug 30/22: Here's the original version, written before I'd read the
+    // String documentation.
+//    let wanted = n >= 0 ? n : 0
+//    var result = ""
+//    while result.count < wanted {
+//        result.append(char)
+//    }
+//    return result
 }
 
 // Return a string of n blanks. If n < 0, it is treated as 0. This function is

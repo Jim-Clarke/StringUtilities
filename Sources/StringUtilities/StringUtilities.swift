@@ -465,7 +465,6 @@ public func nChars(_ n: Int, char: Character = " ") -> String
 {
     if n < 0 {
         return ""
-        
     } else {
         return String(repeating: char, count: n)
     }
